@@ -61,10 +61,31 @@ func (c *K8sClient) CreateSecret(secretname string, secrets map[string]string) e
 	if len(secrets) == 0 {
 		return fmt.Errorf(fmt.Sprintf("k8s.CreateSecret: no secrets provided."))
 	}
+	var stype v1.SecretType = "Opaque"
 	_, err := c.client.CoreV1().Secrets(c.namespace).Create(&v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: secretname,
 		},
+		Type:       stype,
+		StringData: secrets,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *K8sClient) CreateTlsSecret(secretname string, secrets map[string]string) error {
+
+	if len(secrets) == 0 {
+		return fmt.Errorf(fmt.Sprintf("k8s.CreateTlsSecret: no secrets provided."))
+	}
+	var stype v1.SecretType = "kubernetes.io/tls"
+	_, err := c.client.CoreV1().Secrets(c.namespace).Create(&v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: secretname,
+		},
+		Type:       stype,
 		StringData: secrets,
 	})
 	if err != nil {

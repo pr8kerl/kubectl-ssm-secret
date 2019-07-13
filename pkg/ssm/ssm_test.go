@@ -41,7 +41,7 @@ func (m *Client) GetParametersByPath(i *ssm.GetParametersByPathInput) (*ssm.GetP
 	}, nil
 }
 
-func TestGetSecrets(t *testing.T) {
+func TestSsmGetSecrets(t *testing.T) {
 	// Setup Test
 	mockssm := Client{}
 
