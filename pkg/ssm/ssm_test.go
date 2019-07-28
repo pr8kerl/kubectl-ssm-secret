@@ -13,8 +13,7 @@ import (
 var (
 	mockParameters []*ssm.Parameter = []*ssm.Parameter{
 		&ssm.Parameter{
-			ARN: aws.String("arn:aws:ssm:ap-southeast-2:012345678901:parameter/foo/passwd"),
-			// LastModifiedDate: 2019-06-12 02:40:26 +0000 UTC,
+			ARN:              aws.String("arn:aws:ssm:ap-southeast-2:012345678901:parameter/foo/passwd"),
 			LastModifiedDate: aws.Time(time.Now()),
 			Name:             aws.String("/foo/passwd"),
 			Type:             aws.String("SecureString"),
@@ -22,12 +21,29 @@ var (
 			Version:          aws.Int64(1),
 		},
 		&ssm.Parameter{
-			ARN: aws.String("arn:aws:ssm:ap-southeast-2:012345678901:parameter/foo/username"),
-			//                LastModifiedDate: 2019-06-12 02:40:27 +0000 UTC,
+			ARN:              aws.String("arn:aws:ssm:ap-southeast-2:012345678901:parameter/foo/username"),
 			LastModifiedDate: aws.Time(time.Now()),
 			Name:             aws.String("/foo/username"),
-			Type:             aws.String("String"),
+			Type:             aws.String("SecureString"),
 			Value:            aws.String("Gerald"),
+			Version:          aws.Int64(1),
+		},
+	}
+	mockEncodedParameters []*ssm.Parameter = []*ssm.Parameter{
+		&ssm.Parameter{
+			ARN:              aws.String("arn:aws:ssm:ap-southeast-2:012345678901:parameter/foo/encoded"),
+			LastModifiedDate: aws.Time(time.Now()),
+			Name:             aws.String("/foo/encoded"),
+			Type:             aws.String("SecureString"),
+			Value:            aws.String("H4sIALfwPF0AAwsuLUgtCk5NLkotCS4szSwqSs0JSCwuLs8vSuECACxqRqccAAAA"),
+			Version:          aws.Int64(1),
+		},
+		&ssm.Parameter{
+			ARN:              aws.String("arn:aws:ssm:ap-southeast-2:012345678901:parameter/foo/encoded"),
+			LastModifiedDate: aws.Time(time.Now()),
+			Name:             aws.String("/foo/notencoded"),
+			Type:             aws.String("SecureString"),
+			Value:            aws.String("NotSoSuperSecretSquirrelPassword"),
 			Version:          aws.Int64(1),
 		},
 	}
@@ -77,4 +93,33 @@ func TestSession(t *testing.T) {
 		assert.Equal(t, "ap-southeast-2", aws.StringValue(s.Config.Region))
 	})
 
+}
+
+func TestEncodeDecode(t *testing.T) {
+	// happy path
+	mockssm := Client{}
+	testSecrets := map[string]string{
+		"/foo/encoded":    "SuperSecretSquirrelPassword",
+		"/foo/notencoded": "NotSoSuperSecretSquirrelPassword",
+	}
+	testEncodedSecrets := map[string]string{
+		"/foo/encoded":    "H4sIALfwPF0AAwsuLUgtCk5NLkotCS4szSwqSs0JSCwuLs8vSuECACxqRqccAAAA",
+		"/foo/notencoded": "NotSoSuperSecretSquirrelPassword",
+	}
+
+	t.Run("test EncodeSecrets returns expected results", func(t *testing.T) {
+		encoded, err := mockssm.EncodeSecrets(testSecrets)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(encoded))
+		assert.Equal(t, encoded["encoded"], testEncodedSecrets["encoded"])
+		assert.Equal(t, encoded["notencoded"], testEncodedSecrets["notencoded"])
+	})
+
+	t.Run("test DecodeSecrets returns expected results", func(t *testing.T) {
+		decoded, err := mockssm.DecodeSecrets(testEncodedSecrets)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(decoded))
+		assert.Equal(t, decoded["encoded"], testSecrets["encoded"])
+		assert.Equal(t, decoded["notencoded"], testSecrets["notencoded"])
+	})
 }

@@ -14,10 +14,13 @@ import (
 var (
 	commandExample = `
 	# view the param keys and values located in parameter store path /param/path/foo
-	%[1]s list /param/path/foo
+	%[1]s list --ssm-path=/param/path/foo
 
-	# create a kubernetes secret called foo using key/values from parameter store path /param/path/foo
-	%[1]s create /param/path/foo
+	# import to a kubernetes secret called foo from key/values stored at parameter store path /param/path/foo
+	%[1]s import foo --ssm-path /param/path/foo
+
+	# export a kubernetes secret called foo to aws ssm parameter store path /param/path/foo
+	%[1]s export foo --ssm-path /param/path/foo
 
 	# display the plugin version
 	%[1]s version
@@ -34,6 +37,8 @@ type CommandOptions struct {
 	ssm       *ssm.Client
 	k8s       *k8s.K8sClient
 	overwrite bool
+	encode    bool
+	tls       bool
 
 	genericclioptions.IOStreams
 }
@@ -62,6 +67,8 @@ func NewCommandOptions(streams genericclioptions.IOStreams) *CommandOptions {
 		ssm:         svc,
 		k8s:         kclient,
 		overwrite:   false,
+		encode:      false,
+		tls:         false,
 		IOStreams:   streams,
 	}
 }
@@ -70,18 +77,19 @@ func init() {
 	cli = NewCommandOptions(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(createCmd)
-	createCmd.Flags().BoolVar(&cli.toSsm, "secret-to-ssm", cli.toSsm, "copy from k8s secret to aws ssm param store path")
-	createCmd.Flags().StringVar(&cli.ssmPath, "ssm-path", cli.ssmPath, "ssm parameter store path to read data from")
-	createCmd.Flags().BoolVar(&cli.overwrite, "overwrite", cli.overwrite, "copy from k8s secret to aws ssm param store path")
+	rootCmd.AddCommand(importCmd)
+	importCmd.Flags().StringVar(&cli.ssmPath, "ssm-path", cli.ssmPath, "ssm parameter store path to read data from")
+	importCmd.Flags().BoolVar(&cli.overwrite, "overwrite", cli.overwrite, "if k8s secret exists, overwite its values with those from param store")
+	importCmd.Flags().BoolVar(&cli.encode, "decode", cli.encode, "treat store values in param store as gzipped, base64 encoded strings")
+	importCmd.Flags().BoolVar(&cli.encode, "tls", cli.tls, "import ssm param store values to k8s tls secret")
 	cli.configFlags.AddFlags(rootCmd.Flags())
 	cli.configFlags.AddFlags(listCmd.Flags())
-	cli.configFlags.AddFlags(createCmd.Flags())
+	cli.configFlags.AddFlags(importCmd.Flags())
 }
 
 var rootCmd = &cobra.Command{
-	Use:              "ssm-secret list|create|update /param/store/path [flags]",
-	Short:            "view or create secret from param store",
+	Use:              "ssm-secret list|import|export secret [flags]",
+	Short:            "view or import/export k8s secrets from/to aws ssm param store",
 	Example:          fmt.Sprintf(commandExample, "kubectl ssm-secret"),
 	SilenceUsage:     true,
 	TraverseChildren: true,

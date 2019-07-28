@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -18,13 +18,13 @@ func TestK8sCreateSecret(t *testing.T) {
 		namespace: "test",
 	}
 	t.Run("test CreateSecret returns expected results", func(t *testing.T) {
-		err := k.CreateSecret("test", mockSecretData())
+		err := k.CreateSecret("test", mockSecretData(), false)
 		assert.Nil(t, err)
 	})
 	t.Run("test CreateSecret fails with alreadyExists", func(t *testing.T) {
-		err := k.CreateSecret("test", mockSecretData())
+		err := k.CreateSecret("test", mockSecretData(), false)
 		assert.NotNil(t, err)
-		assert.True(t, errors.IsAlreadyExists(err))
+		assert.True(t, kerr.IsAlreadyExists(err))
 	})
 
 }

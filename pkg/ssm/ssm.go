@@ -1,6 +1,11 @@
 package ssm
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -17,12 +22,6 @@ var (
 type Client struct {
 	ssmiface.SSMAPI
 }
-
-/*
-type SSMClient interface {
-	GetSecrets(string) (map[string]string, error)
-}
-*/
 
 func New() (*Client, error) {
 	svc := ssm.New(Sess())
@@ -75,4 +74,56 @@ func (c *Client) GetSecrets(parampath string) (map[string]string, error) {
 	}
 	return results, nil
 
+}
+
+// DecodeSecrets will convert from gzipped, base64 encoded values to strings.
+func (c *Client) DecodeSecrets(secrets map[string]string) (map[string]string, error) {
+	for k, v := range secrets {
+
+		decoded, err := base64.StdEncoding.DecodeString(v)
+		if err != nil {
+			fmt.Printf("warn: base64 decode error: %s\n", err)
+			continue
+		}
+		buf := bytes.NewBuffer(decoded)
+		zr, err := gzip.NewReader(buf)
+		if err != nil {
+			fmt.Printf("warn: gzip reader error: %s\n", err)
+			secrets[k] = string(decoded)
+			continue
+		}
+		defer zr.Close()
+
+		uncompressed, err := ioutil.ReadAll(zr)
+		if err != nil {
+			fmt.Printf("warn: gzip decompress error: %s\n", err)
+			secrets[k] = string(decoded)
+			continue
+		}
+		secrets[k] = string(uncompressed)
+
+	}
+	return secrets, nil
+}
+
+// EncodeSecrets will convert from strings to gzipped, base64 encoded values.
+func (c *Client) EncodeSecrets(secrets map[string]string) (map[string]string, error) {
+	for k, v := range secrets {
+		var buf bytes.Buffer
+		zw := gzip.NewWriter(&buf)
+		defer zw.Close()
+
+		_, err := zw.Write([]byte(v))
+		if err != nil {
+			fmt.Printf("warn: gzip compress error: %s\n", err)
+			continue
+		}
+		if err := zw.Close(); err != nil {
+			fmt.Printf("warn: gzip close error: %s\n", err)
+			continue
+		}
+		secrets[k] = base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	}
+	return secrets, nil
 }

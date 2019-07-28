@@ -25,7 +25,7 @@ fmt:
 
 test: deps 
 	@echo "--- Is this thing working? :hammer_and_wrench:"
-	go test -cover -v ./pkg/...
+	GOOS=linux go test -cover -v ./pkg/...
 
 $(PROJ): deps
 	@echo "--- make it so :cooking:"

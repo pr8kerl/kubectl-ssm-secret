@@ -56,12 +56,15 @@ func NewK8sConfig() (*K8sConfig, error) {
 	}, nil
 }
 
-func (c *K8sClient) CreateSecret(secretname string, secrets map[string]string) error {
+func (c *K8sClient) CreateSecret(secretname string, secrets map[string]string, tls bool) error {
 
 	if len(secrets) == 0 {
 		return fmt.Errorf(fmt.Sprintf("k8s.CreateSecret: no secrets provided."))
 	}
 	var stype v1.SecretType = "Opaque"
+	if tls {
+		stype = "kubernetes.io/tls"
+	}
 	_, err := c.client.CoreV1().Secrets(c.namespace).Create(&v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: secretname,
@@ -86,6 +89,23 @@ func (c *K8sClient) CreateTlsSecret(secretname string, secrets map[string]string
 			Name: secretname,
 		},
 		Type:       stype,
+		StringData: secrets,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *K8sClient) UpdateSecret(secretname string, secrets map[string]string) error {
+
+	if len(secrets) == 0 {
+		return fmt.Errorf(fmt.Sprintf("k8s.UpdateSecret: no secrets provided."))
+	}
+	_, err := c.client.CoreV1().Secrets(c.namespace).Update(&v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: secretname,
+		},
 		StringData: secrets,
 	})
 	if err != nil {
