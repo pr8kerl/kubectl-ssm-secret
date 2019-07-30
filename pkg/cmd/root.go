@@ -13,8 +13,8 @@ import (
 
 var (
 	commandExample = `
-	# view the param keys and values located in parameter store path /param/path/foo
-	%[1]s list --ssm-path=/param/path/foo
+	# view the parameter store keys and values located in parameter store path /param/path/foo
+	%[1]s list /param/path/foo
 
 	# import to a kubernetes secret called foo from key/values stored at parameter store path /param/path/foo
 	%[1]s import foo --ssm-path /param/path/foo

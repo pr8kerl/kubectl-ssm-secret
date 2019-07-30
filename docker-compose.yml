@@ -2,7 +2,7 @@
 version: '3.4'
 
 x-base: &base
-  image: pr8kerl/gobuilder:1.12
+  image: pr8kerl/gobuilder:1.12.1
   volumes:
     - "$HOME/.kube:/root/.kube"
     - "~/.aws:/root/.aws"
@@ -29,3 +29,7 @@ services:
   make:
     <<: *base
     entrypoint: make 
+
+  goreleaser:
+    <<: *base
+    entrypoint: goreleaser 
