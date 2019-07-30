@@ -19,9 +19,9 @@ deps:
 
 fmt:
 	$(foreach dir, $(wildcard $(PKG_DIR)/*), go fmt $(dir)/*.go;)
-	go fmt cmd/*.go
+	go fmt *.go
 	$(foreach dir, $(wildcard $(PKG_DIR)/*), go vet $(dir)/*.go;)
-	go vet cmd/*.go
+	go vet *.go
 
 test: deps 
 	@echo "--- Is this thing working? :hammer_and_wrench:"
@@ -29,7 +29,7 @@ test: deps
 
 $(PROJ): deps
 	@echo "--- make it so :cooking:"
-	go build $(LDFLAGS) -o $@ -v ./cmd/
+	go build $(LDFLAGS) -o $@ -v .
 	touch $@ && chmod 755 $@
 
 ifdef TRAVIS_TAG

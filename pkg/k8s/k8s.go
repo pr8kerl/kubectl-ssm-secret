@@ -69,27 +69,8 @@ func (c *K8sClient) CreateSecret(secretname string, secrets map[string]string, t
 		ObjectMeta: metav1.ObjectMeta{
 			Name: secretname,
 		},
-		Type:       stype,
-		StringData: secrets,
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *K8sClient) CreateTlsSecret(secretname string, secrets map[string]string) error {
-
-	if len(secrets) == 0 {
-		return fmt.Errorf(fmt.Sprintf("k8s.CreateTlsSecret: no secrets provided."))
-	}
-	var stype v1.SecretType = "kubernetes.io/tls"
-	_, err := c.client.CoreV1().Secrets(c.namespace).Create(&v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: secretname,
-		},
-		Type:       stype,
-		StringData: secrets,
+		Type: stype,
+		Data: secretStringToBytes(secrets),
 	})
 	if err != nil {
 		return err
@@ -112,4 +93,29 @@ func (c *K8sClient) UpdateSecret(secretname string, secrets map[string]string) e
 		return err
 	}
 	return nil
+}
+
+func (c *K8sClient) GetSecret(secretname string) (map[string]string, error) {
+
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(secretname, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return secretDataToString(secret), nil
+}
+
+func secretDataToString(secret *v1.Secret) map[string]string {
+	results := make(map[string]string)
+	for k, v := range secret.Data {
+		results[k] = string(v)
+	}
+	return results
+}
+
+func secretStringToBytes(secret map[string]string) map[string][]byte {
+	results := make(map[string][]byte)
+	for k, v := range secret {
+		results[k] = []byte(v)
+	}
+	return results
 }

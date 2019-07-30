@@ -78,13 +78,20 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(importCmd)
+	rootCmd.AddCommand(exportCmd)
 	importCmd.Flags().StringVar(&cli.ssmPath, "ssm-path", cli.ssmPath, "ssm parameter store path to read data from")
+	importCmd.MarkFlagRequired("ssm-path")
 	importCmd.Flags().BoolVar(&cli.overwrite, "overwrite", cli.overwrite, "if k8s secret exists, overwite its values with those from param store")
 	importCmd.Flags().BoolVar(&cli.encode, "decode", cli.encode, "treat store values in param store as gzipped, base64 encoded strings")
 	importCmd.Flags().BoolVar(&cli.encode, "tls", cli.tls, "import ssm param store values to k8s tls secret")
+	exportCmd.Flags().StringVar(&cli.ssmPath, "ssm-path", cli.ssmPath, "ssm parameter store path to write data to")
+	exportCmd.MarkFlagRequired("ssm-path")
+	exportCmd.Flags().BoolVar(&cli.overwrite, "overwrite", cli.overwrite, "if parameter store key exists, overwite its values with those from k8s secret")
+	exportCmd.Flags().BoolVar(&cli.encode, "encode", cli.encode, "gzip, base64 encode values in parameter store")
 	cli.configFlags.AddFlags(rootCmd.Flags())
 	cli.configFlags.AddFlags(listCmd.Flags())
 	cli.configFlags.AddFlags(importCmd.Flags())
+	cli.configFlags.AddFlags(exportCmd.Flags())
 }
 
 var rootCmd = &cobra.Command{

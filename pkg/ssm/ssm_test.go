@@ -57,6 +57,13 @@ func (m *Client) GetParametersByPath(i *ssm.GetParametersByPathInput) (*ssm.GetP
 	}, nil
 }
 
+func (m *Client) PutParameter(i *ssm.PutParameterInput) (*ssm.PutParameterOutput, error) {
+	// mock response/functionality
+	return &ssm.PutParameterOutput{
+		Version: aws.Int64(1),
+	}, nil
+}
+
 func TestSsmGetSecrets(t *testing.T) {
 	// Setup Test
 	mockssm := Client{}
@@ -99,20 +106,20 @@ func TestEncodeDecode(t *testing.T) {
 	// happy path
 	mockssm := Client{}
 	testSecrets := map[string]string{
-		"/foo/encoded":    "SuperSecretSquirrelPassword",
-		"/foo/notencoded": "NotSoSuperSecretSquirrelPassword",
+		"passwd": "SuperSecretSquirrelPassword",
+		"token":  "SuperSecretSquirrelToken",
 	}
 	testEncodedSecrets := map[string]string{
-		"/foo/encoded":    "H4sIALfwPF0AAwsuLUgtCk5NLkotCS4szSwqSs0JSCwuLs8vSuECACxqRqccAAAA",
-		"/foo/notencoded": "NotSoSuperSecretSquirrelPassword",
+		"passwd": "H4sIAAAAAAAA/wouLUgtCk5NLkotCS4szSwqSs0JSCwuLs8vSgEEAAD//8g9Ji4bAAAA",
+		"token":  "H4sIAAAAAAAA/wouLUgtCk5NLkotCS4szSwqSs0Jyc9OzQMEAAD///RNsFwYAAAA",
 	}
 
 	t.Run("test EncodeSecrets returns expected results", func(t *testing.T) {
 		encoded, err := mockssm.EncodeSecrets(testSecrets)
 		assert.Nil(t, err)
 		assert.Equal(t, 2, len(encoded))
-		assert.Equal(t, encoded["encoded"], testEncodedSecrets["encoded"])
-		assert.Equal(t, encoded["notencoded"], testEncodedSecrets["notencoded"])
+		assert.Equal(t, encoded["passwd"], testEncodedSecrets["passwd"])
+		assert.Equal(t, encoded["token"], testEncodedSecrets["token"])
 	})
 
 	t.Run("test DecodeSecrets returns expected results", func(t *testing.T) {
@@ -121,5 +128,18 @@ func TestEncodeDecode(t *testing.T) {
 		assert.Equal(t, 2, len(decoded))
 		assert.Equal(t, decoded["encoded"], testSecrets["encoded"])
 		assert.Equal(t, decoded["notencoded"], testSecrets["notencoded"])
+	})
+}
+
+func TestSsmPutSecrets(t *testing.T) {
+	mockssm := Client{}
+	mockSecrets := map[string]string{
+		"passwd": "SuperSecretSquirrelPassword",
+		"token":  "SuperSecretSquirrelToken",
+	}
+
+	t.Run("test PutSecrets returns expected results", func(t *testing.T) {
+		err := mockssm.PutSecrets("/foo", mockSecrets, false)
+		assert.Nil(t, err)
 	})
 }

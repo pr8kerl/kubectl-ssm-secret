@@ -40,7 +40,8 @@ func Sess() *session.Session {
 		awsRegion = defaultRegion
 	}
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config: aws.Config{Region: aws.String(awsRegion)},
+		Config:            aws.Config{Region: aws.String(awsRegion)},
+		SharedConfigState: session.SharedConfigEnable,
 	}))
 	return sess
 }
@@ -126,4 +127,25 @@ func (c *Client) EncodeSecrets(secrets map[string]string) (map[string]string, er
 
 	}
 	return secrets, nil
+}
+
+func (c *Client) PutSecrets(parampath string, secrets map[string]string, overwrite bool) error {
+
+	for k, v := range secrets {
+
+		key := parampath + "/" + k
+		pinput := &ssm.PutParameterInput{
+			Name:      aws.String(key),
+			Type:      aws.String("SecureString"),
+			Value:     aws.String(v),
+			Overwrite: aws.Bool(overwrite),
+		}
+		resp, err := c.PutParameter(pinput)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("created parameter: %s, version: %d\n", key, *resp.Version)
+
+	}
+	return nil
 }
