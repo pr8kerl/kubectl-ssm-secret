@@ -20,6 +20,7 @@ var importCmd = &cobra.Command{
 
 func (c *CommandOptions) Import(args []string) error {
 
+	c.SetNamespace()
 	secretname := args[0]
 	secrets, err := c.ssm.GetSecrets(c.ssmPath)
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 
 	"github.com/pr8kerl/kubectl-ssm-secret/pkg/k8s"
 	"github.com/pr8kerl/kubectl-ssm-secret/pkg/ssm"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 var (
@@ -29,8 +28,6 @@ var (
 )
 
 type CommandOptions struct {
-	configFlags *genericclioptions.ConfigFlags
-
 	ssmPath   string
 	toSsm     bool
 	args      []string
@@ -39,12 +36,11 @@ type CommandOptions struct {
 	overwrite bool
 	encode    bool
 	tls       bool
-
-	genericclioptions.IOStreams
+	namespace string
 }
 
 // NewCommandOptions provides an instance of CommandOptions with default values
-func NewCommandOptions(streams genericclioptions.IOStreams) *CommandOptions {
+func NewCommandOptions() *CommandOptions {
 	svc, err := ssm.New()
 	if err != nil {
 		fmt.Printf("error: cannot create aws ssm client: %s\n", err)
@@ -61,37 +57,38 @@ func NewCommandOptions(streams genericclioptions.IOStreams) *CommandOptions {
 		os.Exit(1)
 	}
 	return &CommandOptions{
-		configFlags: genericclioptions.NewConfigFlags(true),
-		toSsm:       false,
-		ssmPath:     "",
-		ssm:         svc,
-		k8s:         kclient,
-		overwrite:   false,
-		encode:      false,
-		tls:         false,
-		IOStreams:   streams,
+		toSsm:     false,
+		ssmPath:   "",
+		ssm:       svc,
+		k8s:       kclient,
+		overwrite: false,
+		encode:    false,
+		tls:       false,
+		namespace: "",
 	}
 }
 
+func (c *CommandOptions) SetNamespace() {
+	c.k8s.SetNamespace(c.namespace)
+}
+
 func init() {
-	cli = NewCommandOptions(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
+	cli = NewCommandOptions()
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(importCmd)
 	rootCmd.AddCommand(exportCmd)
-	importCmd.Flags().StringVar(&cli.ssmPath, "ssm-path", cli.ssmPath, "ssm parameter store path to read data from")
+	importCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to read data from")
 	importCmd.MarkFlagRequired("ssm-path")
-	importCmd.Flags().BoolVar(&cli.overwrite, "overwrite", cli.overwrite, "if k8s secret exists, overwite its values with those from param store")
-	importCmd.Flags().BoolVar(&cli.encode, "decode", cli.encode, "treat store values in param store as gzipped, base64 encoded strings")
-	importCmd.Flags().BoolVar(&cli.encode, "tls", cli.tls, "import ssm param store values to k8s tls secret")
-	exportCmd.Flags().StringVar(&cli.ssmPath, "ssm-path", cli.ssmPath, "ssm parameter store path to write data to")
+	importCmd.Flags().BoolVarP(&cli.overwrite, "overwrite", "o", cli.overwrite, "if k8s secret exists, overwite its values with those from param store")
+	importCmd.Flags().BoolVarP(&cli.encode, "decode", "d", cli.encode, "treat store values in param store as gzipped, base64 encoded strings")
+	importCmd.Flags().BoolVarP(&cli.tls, "tls", "t", cli.tls, "import ssm param store values to k8s tls secret")
+	importCmd.Flags().StringVarP(&cli.namespace, "namespace", "n", cli.namespace, "kubernetes namespace")
+	exportCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to write data to")
 	exportCmd.MarkFlagRequired("ssm-path")
-	exportCmd.Flags().BoolVar(&cli.overwrite, "overwrite", cli.overwrite, "if parameter store key exists, overwite its values with those from k8s secret")
-	exportCmd.Flags().BoolVar(&cli.encode, "encode", cli.encode, "gzip, base64 encode values in parameter store")
-	cli.configFlags.AddFlags(rootCmd.Flags())
-	cli.configFlags.AddFlags(listCmd.Flags())
-	cli.configFlags.AddFlags(importCmd.Flags())
-	cli.configFlags.AddFlags(exportCmd.Flags())
+	exportCmd.Flags().BoolVarP(&cli.overwrite, "overwrite", "o", cli.overwrite, "if parameter store key exists, overwite its values with those from k8s secret")
+	exportCmd.Flags().BoolVarP(&cli.encode, "encode", "e", cli.encode, "gzip, base64 encode values in parameter store")
+	exportCmd.Flags().StringVarP(&cli.namespace, "namespace", "n", cli.namespace, "kubernetes namespace")
 }
 
 var rootCmd = &cobra.Command{

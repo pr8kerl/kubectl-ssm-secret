@@ -133,6 +133,10 @@ func (c *Client) PutSecrets(parampath string, secrets map[string]string, overwri
 
 	for k, v := range secrets {
 
+		if len(v) < 1 {
+			fmt.Printf("warn: secret key %s has no value, ignoring\n", k)
+			continue
+		}
 		key := parampath + "/" + k
 		pinput := &ssm.PutParameterInput{
 			Name:      aws.String(key),

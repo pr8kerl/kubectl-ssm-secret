@@ -19,6 +19,7 @@ var exportCmd = &cobra.Command{
 
 func (c *CommandOptions) Export(args []string) error {
 
+	c.SetNamespace()
 	secretname := args[0]
 	secrets, err := c.k8s.GetSecret(secretname)
 	if err != nil {
