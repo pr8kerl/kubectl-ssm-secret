@@ -15,11 +15,13 @@ builds:
     - amd64
   binary: kubectl-ssm_secret
 archives:
-- replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    amd64: x86_64
+  - replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      amd64: x86_64
+    files:
+    - none*
 checksum:
   name_template: 'checksums.txt'
 snapshot:

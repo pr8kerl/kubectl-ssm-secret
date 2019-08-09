@@ -43,8 +43,7 @@ SuperSecretSquirrelPassword%
 Use [krew](https://github.com/kubernetes-sigs/krew) to install.
 
 ```
-% git clone git@github.com:pr8kerl/kubectl-ssm-secret.git
-% cd kubectl-ssm-secret
+% curl -LO https://raw.githubusercontent.com/pr8kerl/kubectl-ssm-secret/master/ssm-secret.yaml
 % kubectl krew install --manifest=ssm-secret.yaml
 ```
 

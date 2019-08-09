@@ -32,12 +32,14 @@ $(PROJ): deps
 	go build $(LDFLAGS) -o $@ -v .
 	touch $@ && chmod 755 $@
 
-ifdef TRAVIS_TAG
+release: deps 
+	@echo "--- package it up! :box:"
+	goreleaser --skip-validate --skip-publish --rm-dist
+	sha256sum dist/kubectl-ssm-secret*.gz
+
 publish: deps
 	@echo "--- release :octocat:"
-	echo docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)"
-	echo goreleaser --skip-validate --rm-dist
-endif
+	goreleaser --skip-validate --rm-dist
 
 clean:
 	rm -rf $(PROJ) $(PROJ)-windows-amd64.exe $(PROJ)-linux-amd64 $(PROJ)-darwin-amd64 dist
