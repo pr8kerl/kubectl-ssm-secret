@@ -29,6 +29,13 @@ func (c *CommandOptions) Export(args []string) error {
 	if len(secrets) == 0 {
 		return fmt.Errorf(fmt.Sprintf("no data found in secret: %s\n", secretname))
 	}
+	if c.encode {
+		encoded, err := c.ssm.EncodeSecrets(secrets)
+		if err != nil {
+			return err
+		}
+		secrets = encoded
+	}
 	err = c.ssm.PutSecrets(c.ssmPath, secrets, c.overwrite)
 	if err != nil {
 		return err

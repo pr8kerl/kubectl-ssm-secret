@@ -30,6 +30,13 @@ func (c *CommandOptions) Import(args []string) error {
 	if len(secrets) == 0 {
 		return fmt.Errorf(fmt.Sprintf("no parameters found at path: %s\n", c.ssmPath))
 	}
+	if c.encode {
+		decoded, err := c.ssm.DecodeSecrets(secrets)
+		if err != nil {
+			return err
+		}
+		secrets = decoded
+	}
 	err = c.k8s.CreateSecret(secretname, secrets, c.tls)
 	if err != nil {
 		if kerr.IsAlreadyExists(err) {
