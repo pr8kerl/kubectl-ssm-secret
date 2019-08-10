@@ -13,7 +13,10 @@ import (
 var (
 	commandExample = `
 	# view the parameter store keys and values located in parameter store path /param/path/foo
-	%[1]s list /param/path/foo
+	%[1]s list --ssm-path /param/path/foo
+
+	# view the kubernetes secret called foo
+	%[1]s list foo
 
 	# import to a kubernetes secret called foo from key/values stored at parameter store path /param/path/foo
 	%[1]s import foo --ssm-path /param/path/foo
@@ -56,6 +59,7 @@ func NewCommandOptions() *CommandOptions {
 		fmt.Printf("error: cannot init k8s client: %s\n", err)
 		os.Exit(1)
 	}
+	ns := kclient.GetNamespace()
 	return &CommandOptions{
 		toSsm:     false,
 		ssmPath:   "",
@@ -64,7 +68,7 @@ func NewCommandOptions() *CommandOptions {
 		overwrite: false,
 		encode:    false,
 		tls:       false,
-		namespace: "",
+		namespace: ns,
 	}
 }
 
@@ -78,17 +82,17 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(importCmd)
 	rootCmd.AddCommand(exportCmd)
+	rootCmd.PersistentFlags().StringVarP(&cli.namespace, "namespace", "n", cli.namespace, "kubernetes namespace")
+	listCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to list parameters from")
 	importCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to read data from")
 	importCmd.MarkFlagRequired("ssm-path")
 	importCmd.Flags().BoolVarP(&cli.overwrite, "overwrite", "o", cli.overwrite, "if k8s secret exists, overwite its values with those from param store")
 	importCmd.Flags().BoolVarP(&cli.encode, "decode", "d", cli.encode, "treat store values in param store as gzipped, base64 encoded strings")
 	importCmd.Flags().BoolVarP(&cli.tls, "tls", "t", cli.tls, "import ssm param store values to k8s tls secret")
-	importCmd.Flags().StringVarP(&cli.namespace, "namespace", "n", cli.namespace, "kubernetes namespace")
 	exportCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to write data to")
 	exportCmd.MarkFlagRequired("ssm-path")
 	exportCmd.Flags().BoolVarP(&cli.overwrite, "overwrite", "o", cli.overwrite, "if parameter store key exists, overwite its values with those from k8s secret")
 	exportCmd.Flags().BoolVarP(&cli.encode, "encode", "e", cli.encode, "gzip, base64 encode values in parameter store")
-	exportCmd.Flags().StringVarP(&cli.namespace, "namespace", "n", cli.namespace, "kubernetes namespace")
 }
 
 var rootCmd = &cobra.Command{

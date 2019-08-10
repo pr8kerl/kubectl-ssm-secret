@@ -11,27 +11,51 @@ var listCmd = &cobra.Command{
 	Short:        "list ssm parameters by path ",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return fmt.Errorf("no ssm param store path provided")
-		}
 		return cli.List(args)
 	},
 }
 
 func (c *CommandOptions) List(args []string) error {
-	for _, key := range args {
-		secrets, err := c.ssm.GetSecrets(key)
+	c.SetNamespace()
+	err := c.ListSsmSecrets()
+	if err != nil {
+		return err
+	}
+	err = c.ListK8sSecrets(args)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *CommandOptions) ListSsmSecrets() error {
+	if len(c.ssmPath) > 0 {
+		secrets, err := c.ssm.GetSecrets(c.ssmPath)
 		if err != nil {
 			return err
 		}
-
 		if len(secrets) == 0 {
-			return fmt.Errorf(fmt.Sprintf("no parameters found at path: %s", key))
+			return fmt.Errorf(fmt.Sprintf("no parameters found at path: %s", c.ssmPath))
 		}
 		for k, v := range secrets {
-			fmt.Printf("%s: %s\n", k, v)
+			fmt.Printf("ssm:%s/%s: %s\n", c.ssmPath, k, v)
 		}
+	}
+	return nil
+}
 
+func (c *CommandOptions) ListK8sSecrets(args []string) error {
+	for _, key := range args {
+		secrets, err := c.k8s.GetSecret(key)
+		if err != nil {
+			return err
+		}
+		if len(secrets) == 0 {
+			return fmt.Errorf(fmt.Sprintf("no secret data found in secret: %s", key))
+		}
+		for k, v := range secrets {
+			fmt.Printf("k8s:%s/%s/%s: %s\n", c.namespace, key, k, v)
+		}
 	}
 	return nil
 }

@@ -1,42 +1,44 @@
 # kubectl-ssm-secret
 
-A kubectl plugin to allow import/export of kubernetes secrets key/value pairs to/from AWS SSM Parameter Store under a common path.
+A kubectl plugin to allow import/export of kubernetes secrets to/from AWS SSM Parameter Store path.
+
 The plugin is opinionated. It will look for parameters under a single path. It will not recursively search more than one level under a given path.
 Useful if you are reprovisioning clusters or namespaces and need to provision the same secrets over and over.
 Or perhaps useful to backup/restore your LetsEncrypt or other certificates.
  
-Import example.
+## examples
 
 Given a couple of parameters stored in param store under the path `/foo`, these can easily be imported into kubernetes into a single secret.
 
-If an AWS parameter at path `/foo/bar` contains a secret value, and the parameter `/foo/passwd` contains a secure password, we can view the keys and vaules in parameter store using the list subcommand:
+If an AWS parameter at path `/foo/bar` contains a secret value, and the parameter `/foo/passwd` contains a secure password, we can view the keys and values in parameter store using the `kubectl ssm-secret list` subcommand:
 
 ```
-% kubectl ssm-secret list /foo
-bar: foobar
-passwd: SuperSecretSquirrelPassword
+% kubectl ssm-secret list --ssm-path /foo
+ssm:/foo/bar: foobar
+ssm:/foo/passwd: SuperSecretSquirrelPassword
 ```
 
 These params can then be imported with the following import command:
 ```
-% kubectl ssm-secret import test-secret --ssm-path /foo
+% kubectl ssm-secret import foo --ssm-path /foo
 imported secret: test-secret
 ```
 
-And we can then check the secret using the beaut `view-secret` kubectl plugin:
+And we can then view the contents of the kubernetes secret using list subcommand:
 ```
-% kubectl view-secret test-secret
-Multiple sub keys found. Specify another argument, one of:
--> bar
--> passwd
-
-% kubectl view-secret test-secret bar
-foobar%
-
-% kubectl view-secret test-secret passwd
-SuperSecretSquirrelPassword%
+% kubectl ssm-secret list foo
+k8s:default/foo/bar: foobar
+k8s:default/foo/passwd: SuperSecretSquirrelPassword
 ```
 
+Finally we can export a secret from kubernetes into a parameter store path:
+
+```
+% kubectl ssm-secret export foo --ssm-path /bar
+created parameter: /bar/bar, version: 1
+created parameter: /bar/passwd, version: 1
+exported secret: foo
+```
 
 ## Install
 
@@ -56,7 +58,7 @@ Requires docker and docker-compose installed locally.
 
 ```
 % git clone git@github.com:pr8kerl/kubectl-ssm-secret.git
-% cd kubectl-ssm-secret                                                                                                                                                               !11252
+% cd kubectl-ssm-secret
 % GOOS=darwin docker-compose run --rm make
 ```
 
@@ -64,7 +66,7 @@ Requires docker and docker-compose installed locally.
 
 * Authenticate to AWS
 * Authenticate to your kubernetes cluster
-* Use the `import` subcommand to create a kubernetes secret from key/valus stored under a parameter store path
+* Use the `import` subcommand to create a kubernetes secret from key/values stored under a parameter store path
 * Use the `export` subcommand to copy from a kubernetes secret to a parameter store path
 * Use the `--overwrite` flag to overwrite an existing kubernetes secret or existing parameter store keys.
 * Use the `--tls` flag with the import subcommand to create a kubernetes tls secret instead of the default opaque type

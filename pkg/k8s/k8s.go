@@ -59,8 +59,11 @@ func NewK8sConfig() (*K8sConfig, error) {
 func (c *K8sClient) SetNamespace(ns string) {
 	if len(ns) > 0 {
 		c.namespace = ns
-		fmt.Printf("namespace set to: %s\n", c.namespace)
 	}
+}
+
+func (c *K8sClient) GetNamespace() string {
+	return c.namespace
 }
 
 func (c *K8sClient) CreateSecret(secretname string, secrets map[string]string, tls bool) error {
