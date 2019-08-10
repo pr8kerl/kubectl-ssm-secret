@@ -14,6 +14,8 @@ builds:
   goarch:
     - amd64
   binary: kubectl-ssm_secret
+  ldflags:
+     - -s -w -X github.com/pr8kerl/kubectl-ssm-secret/pkg/cmd.version={{.Version}}
 archives:
   - replacements:
       darwin: darwin
