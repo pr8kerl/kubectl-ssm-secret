@@ -21,7 +21,7 @@ ssm:/foo/passwd: SuperSecretSquirrelPassword
 These params can then be imported with the following import command:
 ```
 % kubectl ssm-secret import foo --ssm-path /foo
-imported secret: test-secret
+imported secret: foo
 ```
 
 And we can then view the contents of the kubernetes secret using list subcommand:
@@ -70,11 +70,10 @@ Requires docker and docker-compose installed locally.
 * Use the `export` subcommand to copy from a kubernetes secret to a parameter store path
 * Use the `--overwrite` flag to overwrite an existing kubernetes secret or existing parameter store keys.
 * Use the `--tls` flag with the import subcommand to create a kubernetes tls secret instead of the default opaque type
-
-Examples
+* Use the `--namespace` flag to to override the kubernetes namespace in the current context
 
 ```
-± % kubectl ssm-secret --help
+% kubectl ssm-secret --help
 view or import/export k8s secrets from/to aws ssm param store
 
 Usage:
@@ -83,17 +82,32 @@ Usage:
 
 Examples:
 
-	# view the parameter store keys and values located in parameter store path /param/path/foo
-	kubectl ssm-secret list /param/path/foo
+        # view the parameter store keys and values located in parameter store path /param/path/foo
+        kubectl ssm-secret list --ssm-path /param/path/foo
 
-	# import to a kubernetes secret called foo from key/values stored at parameter store path /param/path/foo
-	kubectl ssm-secret import foo --ssm-path /param/path/foo
+        # view the kubernetes secret called foo
+        kubectl ssm-secret list foo
 
-	# export a kubernetes secret called foo to aws ssm parameter store path /param/path/foo
-	kubectl ssm-secret export foo --ssm-path /param/path/foo
+        # import to a kubernetes secret called foo from key/values stored at parameter store path /param/path/foo
+        kubectl ssm-secret import foo --ssm-path /param/path/foo
 
-	# display the plugin version
-	kubectl ssm-secret version
+        # export a kubernetes secret called foo to aws ssm parameter store path /param/path/foo
+        kubectl ssm-secret export foo --ssm-path /param/path/foo
 
+        # display the plugin version
+        kubectl ssm-secret version
+
+
+Available Commands:
+  export      export a kubernetes secret to aws ssm param store
+  help        Help about any command
+  import      import a kubernetes secret from aws ssm param store
+  list        list ssm parameters by path 
+  version     print the ssm-secret version
+
+Flags:
+  -h, --help               help for ssm-secret
+  -n, --namespace string   kubernetes namespace (default "default")
+
+Use "ssm-secret [command] --help" for more information about a command.
 ```
-
