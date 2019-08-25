@@ -2,7 +2,8 @@
 
 A kubectl plugin to allow import/export of kubernetes secrets to/from AWS SSM Parameter Store path.
 
-The plugin is opinionated. It will look for parameters under a single path. It will not recursively search more than one level under a given path.
+The plugin is opinionated. It will look for parameters under a single path. It will not recursively search more than one level under a given path. All parameters found under the given parameter store path can be imported into a single kubernetes secret as StringData.
+
 Useful if you are reprovisioning clusters or namespaces and need to provision the same secrets over and over.
 Or perhaps useful to backup/restore your LetsEncrypt or other certificates.
  
@@ -24,15 +25,32 @@ These params can then be imported with the following import command:
 imported secret: foo
 ```
 
-And we can then view the contents of the kubernetes secret using list subcommand:
+The resulting kubernetes secret created will look like this:
+```
+% kubectl get secret foo -o yaml
+apiVersion: v1
+data:
+  bar: Zm9vYmFy
+  passwd: U3VwZXJTZWNyZXRTcXVpcnJlbFBhc3N3b3Jk
+kind: Secret
+metadata:
+  creationTimestamp: "2019-08-10T00:42:35Z"
+  name: foo
+  namespace: default
+  resourceVersion: "5565641"
+  selfLink: /api/v1/namespaces/default/secrets/foo
+  uid: bf0fe887-bb07-11e9-9531-02946becbcee
+type: Opaque
+```
+
+ssm-secret can also be used to then view the plain-text contents of the kubernetes secret using list subcommand:
 ```
 % kubectl ssm-secret list foo
 k8s:default/foo/bar: foobar
 k8s:default/foo/passwd: SuperSecretSquirrelPassword
 ```
 
-Finally we can export a secret from kubernetes into a parameter store path:
-
+Additionally, we can export a secret from kubernetes into a parameter store path:
 ```
 % kubectl ssm-secret export foo --ssm-path /bar
 created parameter: /bar/bar, version: 1
@@ -110,4 +128,39 @@ Flags:
   -n, --namespace string   kubernetes namespace (default "default")
 
 Use "ssm-secret [command] --help" for more information about a command.
+```
+
+```
+% kubectl ssm-secret export --help
+export a kubernetes secret to aws ssm param store
+
+Usage:
+  ssm-secret export [flags]
+
+Flags:
+  -e, --encode            gzip, base64 encode values in parameter store
+  -h, --help              help for export
+  -o, --overwrite         if parameter store key exists, overwite its values with those from k8s secret
+  -s, --ssm-path string   ssm parameter store path to write data to
+
+Global Flags:
+  -n, --namespace string   kubernetes namespace (default "default")
+```
+
+```
+% kubectl ssm-secret import --help
+import a kubernetes secret from aws ssm param store
+
+Usage:
+  ssm-secret import [flags]
+
+Flags:
+  -d, --decode            treat store values in param store as gzipped, base64 encoded strings
+  -h, --help              help for import
+  -o, --overwrite         if k8s secret exists, overwite its values with those from param store
+  -s, --ssm-path string   ssm parameter store path to read data from
+  -t, --tls               import ssm param store values to k8s tls secret
+
+Global Flags:
+  -n, --namespace string   kubernetes namespace (default "default")
 ```
