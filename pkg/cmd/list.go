@@ -40,6 +40,15 @@ func (c *CommandOptions) ListSsmSecrets() error {
 		for k, v := range secrets {
 			fmt.Printf("ssm:%s/%s: %s\n", c.ssmPath, k, v)
 		}
+		if c.toEnvironment {
+			for k, v := range secrets {
+				fmt.Printf("%s=%s\n", k, v)
+			}
+		} else {
+			for k, v := range secrets {
+				fmt.Printf("ssm:%s/%s: %s\n", c.ssmPath, k, v)
+			}
+		}
 	}
 	return nil
 }
@@ -53,8 +62,14 @@ func (c *CommandOptions) ListK8sSecrets(args []string) error {
 		if len(secrets) == 0 {
 			return fmt.Errorf(fmt.Sprintf("no secret data found in secret: %s", key))
 		}
-		for k, v := range secrets {
-			fmt.Printf("k8s:%s/%s/%s: %s\n", c.namespace, key, k, v)
+		if c.toEnvironment {
+			for k, v := range secrets {
+				fmt.Printf("%s=%s\n", k, v)
+			}
+		} else {
+			for k, v := range secrets {
+				fmt.Printf("k8s:%s/%s/%s: %s\n", c.namespace, key, k, v)
+			}
 		}
 	}
 	return nil

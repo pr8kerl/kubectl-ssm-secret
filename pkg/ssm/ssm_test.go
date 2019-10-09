@@ -146,7 +146,7 @@ func TestSsmPutSecrets(t *testing.T) {
 	mockSecrets = map[string]string{
 		"passwd": "SuperSecretSquirrelPassword",
 		"token":  "SuperSecretSquirrelToken",
-		"null": "",
+		"null":   "",
 	}
 	t.Run("test PutSecrets with no value is ignored", func(t *testing.T) {
 		err := mockssm.PutSecrets("/foo", mockSecrets, false)

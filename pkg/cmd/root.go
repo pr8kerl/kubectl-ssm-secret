@@ -31,15 +31,16 @@ var (
 )
 
 type CommandOptions struct {
-	ssmPath   string
-	toSsm     bool
-	args      []string
-	ssm       *ssm.Client
-	k8s       *k8s.K8sClient
-	overwrite bool
-	encode    bool
-	tls       bool
-	namespace string
+	ssmPath       string
+	toSsm         bool
+	args          []string
+	ssm           *ssm.Client
+	k8s           *k8s.K8sClient
+	overwrite     bool
+	encode        bool
+	toEnvironment bool
+	tls           bool
+	namespace     string
 }
 
 // NewCommandOptions provides an instance of CommandOptions with default values
@@ -61,14 +62,15 @@ func NewCommandOptions() *CommandOptions {
 	}
 	ns := kclient.GetNamespace()
 	return &CommandOptions{
-		toSsm:     false,
-		ssmPath:   "",
-		ssm:       svc,
-		k8s:       kclient,
-		overwrite: false,
-		encode:    false,
-		tls:       false,
-		namespace: ns,
+		toSsm:         false,
+		ssmPath:       "",
+		ssm:           svc,
+		k8s:           kclient,
+		overwrite:     false,
+		encode:        false,
+		toEnvironment: false,
+		tls:           false,
+		namespace:     ns,
 	}
 }
 
@@ -84,6 +86,7 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 	rootCmd.PersistentFlags().StringVarP(&cli.namespace, "namespace", "n", cli.namespace, "kubernetes namespace")
 	listCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to list parameters from")
+	listCmd.Flags().BoolVarP(&cli.toEnvironment, "env", "e", cli.overwrite, "output as environment variable key pairs")
 	importCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to read data from")
 	importCmd.MarkFlagRequired("ssm-path")
 	importCmd.Flags().BoolVarP(&cli.overwrite, "overwrite", "o", cli.overwrite, "if k8s secret exists, overwite its values with those from param store")

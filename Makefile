@@ -11,7 +11,7 @@ PKG_DIR := pkg
 #LDFLAGS := -ldflags "-X main.commit=`git rev-parse HEAD`"
 LDFLAGS := -ldflags '-extldflags "-static"'
 
-all: deps fmt test $(PROJ) publish
+all: deps fmt test $(PROJ) 
 
 deps:
 	@echo "--- collecting ingredients :bento:"
