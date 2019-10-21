@@ -37,9 +37,6 @@ func (c *CommandOptions) ListSsmSecrets() error {
 		if len(secrets) == 0 {
 			return fmt.Errorf(fmt.Sprintf("no parameters found at path: %s", c.ssmPath))
 		}
-		for k, v := range secrets {
-			fmt.Printf("ssm:%s/%s: %s\n", c.ssmPath, k, v)
-		}
 		if c.toEnvironment {
 			for k, v := range secrets {
 				fmt.Printf("%s=%s\n", k, v)
