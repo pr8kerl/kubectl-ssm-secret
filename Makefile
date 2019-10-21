@@ -40,6 +40,7 @@ release: deps
 publish: deps
 	@echo "--- release :octocat:"
 	goreleaser --skip-validate --rm-dist
+	sha256sum dist/kubectl-ssm-secret*.gz
 
 clean:
 	rm -rf $(PROJ) $(PROJ)-windows-amd64.exe $(PROJ)-linux-amd64 $(PROJ)-darwin-amd64 dist
