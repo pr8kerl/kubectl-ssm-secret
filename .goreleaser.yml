@@ -23,7 +23,7 @@ archives:
       windows: windows
       amd64: x86_64
     files:
-    - none*
+    - LICENSE
 checksum:
   name_template: 'checksums.txt'
 snapshot:
