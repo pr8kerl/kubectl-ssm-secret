@@ -84,6 +84,7 @@ Requires docker and docker-compose installed locally.
 
 * Authenticate to AWS
 * Authenticate to your kubernetes cluster
+* Use the `list` subcommand to list keys and decoded values from a kubernetes secret or from a ssm parameter store path
 * Use the `import` subcommand to create a kubernetes secret from key/values stored under a parameter store path
 * Use the `export` subcommand to copy from a kubernetes secret to a parameter store path
 * Use the `--overwrite` flag to overwrite an existing kubernetes secret or existing parameter store keys.
@@ -163,4 +164,15 @@ Flags:
 
 Global Flags:
   -n, --namespace string   kubernetes namespace (default "default")
+```
+
+```
+% kubectl ssm-secret list --help
+Flags:
+  -e, --env               output as environment variable key pairs
+  -h, --help              help for list
+  -s, --ssm-path string   ssm parameter store path to list parameters from
+
+Global Flags:
+  -n, --namespace string   kubernetes namespace (default "svcs")
 ```
