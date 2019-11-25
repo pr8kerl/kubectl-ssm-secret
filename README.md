@@ -60,11 +60,10 @@ exported secret: foo
 
 ## Install
 
-Use [krew](https://github.com/kubernetes-sigs/krew) to install.
+Use latest [krew](https://github.com/kubernetes-sigs/krew) to install.
 
 ```
-% curl -LO https://raw.githubusercontent.com/pr8kerl/kubectl-ssm-secret/master/ssm-secret.yaml
-% kubectl krew install --manifest=ssm-secret.yaml
+% kubectl krew install ssm-secret
 ```
 
 ## Build 
