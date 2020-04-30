@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 	"time"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
@@ -139,7 +140,7 @@ func TestSsmPutSecrets(t *testing.T) {
 	}
 
 	t.Run("test PutSecrets returns expected results", func(t *testing.T) {
-		err := mockssm.PutSecrets("/foo", mockSecrets, false)
+		err := mockssm.PutSecrets("/foo", mockSecrets, false, false)
 		assert.Nil(t, err)
 	})
 
@@ -149,7 +150,16 @@ func TestSsmPutSecrets(t *testing.T) {
 		"null":   "",
 	}
 	t.Run("test PutSecrets with no value is ignored", func(t *testing.T) {
-		err := mockssm.PutSecrets("/foo", mockSecrets, false)
+		err := mockssm.PutSecrets("/foo", mockSecrets, false, false)
+		assert.Nil(t, err)
+	})
+
+	mockSecrets = map[string]string{
+		"passwd": "SuperSecretSquirrelPassword",
+		"token":  []string{strings.Repeat("*", 4100)}
+	}
+	t.Run("test PutSecrets with secret size over 4 kb", func(t *testing.T) {
+		err := mockssm.PutSecrets("/foo", mockSecrets, false, true)
 		assert.Nil(t, err)
 	})
 }

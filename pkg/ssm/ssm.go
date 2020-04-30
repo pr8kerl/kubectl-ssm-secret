@@ -129,7 +129,7 @@ func (c *Client) EncodeSecrets(secrets map[string]string) (map[string]string, er
 	return secrets, nil
 }
 
-func (c *Client) PutSecrets(parampath string, secrets map[string]string, overwrite bool) error {
+func (c *Client) PutSecrets(parampath string, secrets map[string]string, overwrite bool, advanced bool) error {
 
 	for k, v := range secrets {
 
@@ -137,12 +137,19 @@ func (c *Client) PutSecrets(parampath string, secrets map[string]string, overwri
 			fmt.Printf("warn: secret key %s has no value, ignoring\n", k)
 			continue
 		}
+
+		tier := "Standard"
+		if advanced == true {
+			tier = "Advanced"
+		}
+
 		key := parampath + "/" + k
 		pinput := &ssm.PutParameterInput{
 			Name:      aws.String(key),
 			Type:      aws.String("SecureString"),
 			Value:     aws.String(v),
 			Overwrite: aws.Bool(overwrite),
+			Tier:	   aws.String(tier)
 		}
 		resp, err := c.PutParameter(pinput)
 		if err != nil {

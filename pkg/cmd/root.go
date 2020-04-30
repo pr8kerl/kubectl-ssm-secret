@@ -37,6 +37,7 @@ type CommandOptions struct {
 	ssm           *ssm.Client
 	k8s           *k8s.K8sClient
 	overwrite     bool
+	advanced	  bool
 	encode        bool
 	toEnvironment bool
 	tls           bool
@@ -67,6 +68,7 @@ func NewCommandOptions() *CommandOptions {
 		ssm:           svc,
 		k8s:           kclient,
 		overwrite:     false,
+		advanced:	   false,
 		encode:        false,
 		toEnvironment: false,
 		tls:           false,
@@ -95,6 +97,7 @@ func init() {
 	exportCmd.Flags().StringVarP(&cli.ssmPath, "ssm-path", "s", cli.ssmPath, "ssm parameter store path to write data to")
 	exportCmd.MarkFlagRequired("ssm-path")
 	exportCmd.Flags().BoolVarP(&cli.overwrite, "overwrite", "o", cli.overwrite, "if parameter store key exists, overwite its values with those from k8s secret")
+	exportCmd.Flags().BoolVarP(&cli.advanced, "advanced", "o", cli.advanced, "if the secret size is over 4 KB but less than 8 KB, export it to an advanced parameter")
 	exportCmd.Flags().BoolVarP(&cli.encode, "encode", "e", cli.encode, "gzip, base64 encode values in parameter store")
 }
 

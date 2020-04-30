@@ -87,6 +87,7 @@ Requires docker and docker-compose installed locally.
 * Use the `import` subcommand to create a kubernetes secret from key/values stored under a parameter store path
 * Use the `export` subcommand to copy from a kubernetes secret to a parameter store path
 * Use the `--overwrite` flag to overwrite an existing kubernetes secret or existing parameter store keys.
+* Use the `--advanced` flag to export a kubernetes secret which size is over 4 KB to an advanced parameter.
 * Use the `--tls` flag with the import subcommand to create a kubernetes tls secret instead of the default opaque type
 * Use the `--namespace` flag to to override the kubernetes namespace in the current context
 
@@ -141,6 +142,7 @@ Flags:
   -e, --encode            gzip, base64 encode values in parameter store
   -h, --help              help for export
   -o, --overwrite         if parameter store key exists, overwite its values with those from k8s secret
+  -a, --advanced          if secret size is over 4 KB, store it in an advanced parameter
   -s, --ssm-path string   ssm parameter store path to write data to
 
 Global Flags:
