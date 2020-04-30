@@ -36,7 +36,7 @@ func (c *CommandOptions) Export(args []string) error {
 		}
 		secrets = encoded
 	}
-	err = c.ssm.PutSecrets(c.ssmPath, secrets, c.overwrite)
+	err = c.ssm.PutSecrets(c.ssmPath, secrets, c.overwrite, c.advanced)
 	if err != nil {
 		return err
 	}
