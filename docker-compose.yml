@@ -2,7 +2,7 @@
 version: '3.4'
 
 x-base: &base
-  image: pr8kerl/gobuilder:1.12.1
+  image: pr8kerl/gobuilder:1.14
   volumes:
     - "$HOME/.kube:/root/.kube"
     - "~/.aws:/root/.aws"

@@ -149,7 +149,7 @@ func (c *Client) PutSecrets(parampath string, secrets map[string]string, overwri
 			Type:      aws.String("SecureString"),
 			Value:     aws.String(v),
 			Overwrite: aws.Bool(overwrite),
-			Tier:	   aws.String(tier)
+			Tier:      aws.String(tier),
 		}
 		resp, err := c.PutParameter(pinput)
 		if err != nil {

@@ -2,9 +2,9 @@ package ssm
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
@@ -156,7 +156,7 @@ func TestSsmPutSecrets(t *testing.T) {
 
 	mockSecrets = map[string]string{
 		"passwd": "SuperSecretSquirrelPassword",
-		"token":  []string{strings.Repeat("*", 4100)}
+		"token":  strings.Repeat("*", 4100),
 	}
 	t.Run("test PutSecrets with secret size over 4 kb", func(t *testing.T) {
 		err := mockssm.PutSecrets("/foo", mockSecrets, false, true)
