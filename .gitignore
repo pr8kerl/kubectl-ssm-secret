@@ -10,4 +10,4 @@
 !*.yml
 !Makefile
 !*.md
-mod/
+dist/

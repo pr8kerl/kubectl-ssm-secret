@@ -76,7 +76,7 @@ Requires docker and docker-compose installed locally.
 ```
 % git clone git@github.com:pr8kerl/kubectl-ssm-secret.git
 % cd kubectl-ssm-secret
-% GOOS=darwin docker-compose run --rm make
+% GOOS=darwin GOARCH=arm64 docker-compose run --rm make
 ```
 
 ## Use

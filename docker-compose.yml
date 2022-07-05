@@ -2,21 +2,19 @@
 version: '3.4'
 
 x-base: &base
-  image: pr8kerl/gobuilder:1.14
+  image: pr8kerl/gobuilder:1.18
   volumes:
     - "$HOME/.kube:/root/.kube"
     - "~/.aws:/root/.aws"
-    - ./mod:/go/pkg/mod
-    - .:/go/src/github.com/pr8kerl/kubectl-ssm-secret
-  working_dir: /go/src/github.com/pr8kerl/kubectl-ssm-secret
+    - /tmp:/tmp
+    - .:/usr/local/go/src/github.com/pr8kerl/kubectl-ssm-secret
+  working_dir: /usr/local/go/src/github.com/pr8kerl/kubectl-ssm-secret
   environment:
     - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-ap-southeast-2}
     - AWS_PROFILE=${AWS_PROFILE:-default}
-    - GO111MODULE=on
-    - GOPROXY=https://goproxy.io
-    - CGO_ENABLED=0
     - GOOS=${GOOS:-linux}
-    - GOARCH=amd64
+    - GOARCH=${GOARCH:-amd64}
+    - GOMODCACHE=/tmp/mod
     - GITHUB_TOKEN
     - TRAVIS_TAG
 
