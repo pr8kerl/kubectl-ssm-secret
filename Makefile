@@ -33,7 +33,7 @@ $(PROJ): deps
 
 build: deps 
 	@echo "--- goreleaser build :cooking:"
-	goreleaser build --single-target
+	goreleaser build --single-target --rm-dist
 
 release: deps 
 	@echo "--- package it up! :box:"

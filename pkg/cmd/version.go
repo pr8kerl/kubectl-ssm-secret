@@ -12,6 +12,6 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "print the ssm-secret version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(fmt.Printf("ssm-secret %s", version))
+		fmt.Println(fmt.Sprintf("ssm-secret %s", version))
 	},
 }

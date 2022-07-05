@@ -16,7 +16,6 @@ x-base: &base
     - GOARCH=${GOARCH:-amd64}
     - GOMODCACHE=/tmp/mod
     - GITHUB_TOKEN
-    - TRAVIS_TAG
 
 services:
 
