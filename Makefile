@@ -7,21 +7,20 @@ PROJ   := kubectl-ssm_secret
 DOCKER_USERNAME ?= Monkey
 DOCKER_PASSWORD ?= Magic
 PKG_DIR := pkg
+VERSION		:= $(shell git describe --tags --match "v[0-9]*" --exact HEAD 2>/dev/null || echo snapshot)
 
 #LDFLAGS := -ldflags "-X main.commit=`git rev-parse HEAD`"
-LDFLAGS := -ldflags '-extldflags "-static"'
+LDFLAGS := -ldflags "-s -w -X github.com/pr8kerl/kubectl-ssm-secret/pkg/cmd.version=$(VERSION)"
 
 all: deps fmt test $(PROJ) 
 
 deps:
 	@echo "--- collecting ingredients :bento:"
-	go mod download
+	go mod tidy -v
 
 fmt:
-	$(foreach dir, $(wildcard $(PKG_DIR)/*), go fmt $(dir)/*.go;)
-	go fmt *.go
-	$(foreach dir, $(wildcard $(PKG_DIR)/*), go vet $(dir)/*.go;)
-	go vet *.go
+	go fmt ./...
+	go vet ./...
 
 test: deps 
 	@echo "--- Is this thing working? :hammer_and_wrench:"
@@ -29,8 +28,12 @@ test: deps
 
 $(PROJ): deps
 	@echo "--- make it so :cooking:"
-	go build $(LDFLAGS) -o $@ -v .
+	go build $(LDFLAGS) -o $@ -v ./cmd/$(PROJ)
 	touch $@ && chmod 755 $@
+
+build: deps 
+	@echo "--- goreleaser build :cooking:"
+	goreleaser build --single-target
 
 release: deps 
 	@echo "--- package it up! :box:"
@@ -43,4 +46,4 @@ publish: deps
 	sha256sum dist/kubectl-ssm-secret*.gz
 
 clean:
-	rm -rf $(PROJ) $(PROJ)-windows-amd64.exe $(PROJ)-linux-amd64 $(PROJ)-darwin-amd64 dist
+	rm -rf $(PROJ) $(PROJ)-* dist

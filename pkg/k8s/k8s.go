@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
@@ -75,13 +76,17 @@ func (c *K8sClient) CreateSecret(secretname string, secrets map[string]string, t
 	if tls {
 		stype = "kubernetes.io/tls"
 	}
-	_, err := c.client.CoreV1().Secrets(c.namespace).Create(&v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: secretname,
+	_, err := c.client.CoreV1().Secrets(c.namespace).Create(
+		context.Background(),
+		&v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: secretname,
+			},
+			Type: stype,
+			Data: secretStringToBytes(secrets),
 		},
-		Type: stype,
-		Data: secretStringToBytes(secrets),
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		return err
 	}
@@ -93,12 +98,16 @@ func (c *K8sClient) UpdateSecret(secretname string, secrets map[string]string) e
 	if len(secrets) == 0 {
 		return fmt.Errorf(fmt.Sprintf("k8s.UpdateSecret: no secrets provided."))
 	}
-	_, err := c.client.CoreV1().Secrets(c.namespace).Update(&v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: secretname,
+	_, err := c.client.CoreV1().Secrets(c.namespace).Update(
+		context.Background(),
+		&v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: secretname,
+			},
+			StringData: secrets,
 		},
-		StringData: secrets,
-	})
+		metav1.UpdateOptions{},
+	)
 	if err != nil {
 		return err
 	}
@@ -107,7 +116,11 @@ func (c *K8sClient) UpdateSecret(secretname string, secrets map[string]string) e
 
 func (c *K8sClient) GetSecret(secretname string) (map[string]string, error) {
 
-	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(secretname, metav1.GetOptions{})
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(
+		context.Background(),
+		secretname,
+		metav1.GetOptions{},
+	)
 	if err != nil {
 		return nil, err
 	}
